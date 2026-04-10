@@ -132,7 +132,7 @@ copy_latest_logs() {
     return
   fi
 
-  sort -rn -k1,1 "$listing_file" | head -n "$limit" | while IFS=$'\t' read -r _ label root file; do
+  sort -rn -k1,1 "$listing_file" | awk -v limit="$limit" 'NR <= limit' | while IFS=$'\t' read -r _ label root file; do
     local rel dest
     case "$file" in
       "$root"/*)
