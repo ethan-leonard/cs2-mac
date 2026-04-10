@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="${CS2_MAC_REPO_ROOT:-__CS2_MAC_REPO_ROOT__}"
+setup_script="$repo_root/scripts/setup.sh"
+
+if [[ ! -x "$setup_script" ]]; then
+  message="Setup script is missing or not executable: $setup_script"
+  if command -v osascript >/dev/null 2>&1; then
+    osascript -e "display alert \"CS2 Setup failed\" message \"$message\" as critical"
+  else
+    echo "$message" >&2
+  fi
+  exit 1
+fi
+
+setup_command="cd '$repo_root' && '$setup_script'; status=\$?; echo; if [ \$status -eq 0 ]; then echo 'CS2 setup completed.'; else echo 'CS2 setup failed with exit code '\$status'.'; fi; echo 'Press Return to close this window.'; read -r _"
+
+if command -v osascript >/dev/null 2>&1; then
+  CS2_SETUP_COMMAND="$setup_command" osascript <<'EOF_OSA'
+on run
+  set setupCommand to system attribute "CS2_SETUP_COMMAND"
+  tell application "Terminal"
+    activate
+    do script setupCommand
+  end tell
+end run
+EOF_OSA
+  exit 0
+fi
+
+exec bash -lc "$setup_command"
