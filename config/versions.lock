@@ -1,0 +1,15 @@
+# Pinned defaults for the Agent A runtime scripts.
+# These values are intentionally stable and should only change by an explicit edit.
+
+CS2_RUNTIME_CHANNEL_DEFAULT="crossover_local"
+CS2_RUNTIME_BREW_TAP_DEFAULT="apple/apple"
+CS2_RUNTIME_BREW_TAP_URL_DEFAULT="https://github.com/apple/homebrew-apple"
+CS2_RUNTIME_BREW_FORMULA_DEFAULT="game-porting-toolkit"
+CS2_RUNTIME_MANUAL_PKG_PATH_DEFAULT=""
+CS2_RUNTIME_CROSSOVER_WINE_DEFAULT="$HOME/Applications/CrossOver.app/Contents/SharedSupport/CrossOver/lib/wine/x86_64-unix/wine"
+CS2_RUNTIME_CROSSOVER_WINESERVER_DEFAULT="$HOME/Applications/CrossOver.app/Contents/SharedSupport/CrossOver/CrossOver-Hosted Application/wineserver"
+CS2_RUNTIME_MIN_MACOS_DEFAULT="14.0"
+CS2_RUNTIME_REQUIRED_BINARIES_DEFAULT="wine wineserver wineboot"
+CS2_RUNTIME_VERSION_COMMANDS_DEFAULT="wine wineserver"
+CS2_CORE_TOOLS_DEFAULT="brew sw_vers xcode-select xcrun arch df awk sed grep cut tr mktemp plutil xattr codesign diskutil"
+CS2_MIN_FREE_GB_DEFAULT="10"
