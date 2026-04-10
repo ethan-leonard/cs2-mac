@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bash syntax check
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="/usr/bin:/bin:/usr/sbin:/sbin"
+          find scripts -type f -name '*.sh' | sort | while read -r script; do
+            bash -n "$script"
+          done
+
+      - name: Smoke checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="/usr/bin:/bin:/usr/sbin:/sbin"
+          ./scripts/test-smoke.sh --verify-only
+
+      - name: Migration checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="/usr/bin:/bin:/usr/sbin:/sbin"
+          tmp_root="$(mktemp -d)"
+          mkdir -p \
+            "$tmp_root/source/Steam/steamapps/common/Counter-Strike Global Offensive" \
+            "$tmp_root/source/Steam/steamapps" \
+            "$tmp_root/source/Steam/config" \
+            "$tmp_root/source/Steam/userdata" \
+            "$tmp_root/target/Steam"
+          touch \
+            "$tmp_root/source/Steam/steamapps/appmanifest_730.acf" \
+            "$tmp_root/source/Steam/config/config.vdf" \
+            "$tmp_root/source/Steam/config/loginusers.vdf"
+          ./scripts/test-migration.sh --verify-only \
+            --source-steam-root "$tmp_root/source/Steam" \
+            --target-steam-root "$tmp_root/target/Steam" \
+            --backup-root "$tmp_root/backups"
+
+      - name: Launch checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="/usr/bin:/bin:/usr/sbin:/sbin"
+          ./scripts/test-launch.sh --verify-only
+
+      - name: Update guard checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="/usr/bin:/bin:/usr/sbin:/sbin"
+          ./scripts/test-update-guard.sh --verify-only
