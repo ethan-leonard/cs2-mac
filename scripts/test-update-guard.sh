@@ -98,6 +98,40 @@ trap 'rm -rf "$tmp_root"' EXIT
 baseline_file="$tmp_root/approved-builds.env"
 state_dir="$tmp_root/state"
 report_file="$tmp_root/report.txt"
+fixture_prefix="$tmp_root/prefix"
+fixture_steam_root="$fixture_prefix/drive_c/Program Files (x86)/Steam"
+fixture_manifest_dir="$fixture_steam_root/package"
+fixture_steamapps_dir="$fixture_steam_root/steamapps"
+fixture_bin_dir="$tmp_root/runtime-bin"
+fixture_wine="$fixture_bin_dir/wine"
+
+mkdir -p "$fixture_manifest_dir" "$fixture_steamapps_dir" "$fixture_bin_dir" "$state_dir"
+
+cat >"$fixture_manifest_dir/steam_client_win64.manifest" <<'EOF_MANIFEST'
+"manifest"
+{
+  "version"    "1773426488"
+}
+EOF_MANIFEST
+
+cat >"$fixture_steamapps_dir/appmanifest_730.acf" <<'EOF_ACF'
+"AppState"
+{
+  "appid"      "730"
+  "buildid"    "22627914"
+}
+EOF_ACF
+
+cat >"$fixture_wine" <<'EOF_WINE'
+#!/usr/bin/env bash
+if [[ "${1:-}" == "--version" ]]; then
+  echo "wine-11.0-8709-g34d9442f225"
+  exit 0
+fi
+echo "unsupported fake wine invocation: $*" >&2
+exit 1
+EOF_WINE
+chmod +x "$fixture_wine"
 
 common_env=(
   "CS2_UPDATE_GUARD_BASELINE_FILE=$baseline_file"
@@ -105,6 +139,9 @@ common_env=(
   "CS2_UPDATE_GUARD_REPORT_FILE=$report_file"
   "CS2_UPDATE_GUARD_SHOW_POPUP=0"
   "CS2_UPDATE_GUARD_RUN_QUICK_CHECKS=0"
+  "CS2_MAC_PREFIX=$fixture_prefix"
+  "CS2_MAC_ROOT=$tmp_root/project-root"
+  "WINE_BIN=$fixture_wine"
 )
 
 run_checked "approve-current writes temp baseline" \
