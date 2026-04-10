@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Runtime data and logs
+runtime/
+logs/
+artifacts/
+
+# Temp and bundles
+*.tmp
+*.swp
+
+# Generated app copies
+build/
