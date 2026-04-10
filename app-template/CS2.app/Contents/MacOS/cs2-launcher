@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="${CS2_MAC_REPO_ROOT:-__CS2_MAC_REPO_ROOT__}"
+launch_script="$repo_root/scripts/launch-cs2.sh"
+log_dir="${CS2_MAC_LOG_DIR:-$HOME/Library/Application Support/CS2-Mac/logs/app}"
+timestamp="$(date +%Y%m%d-%H%M%S)"
+log_file="$log_dir/cs2-launcher-$timestamp.log"
+
+mkdir -p "$log_dir"
+
+{
+  echo "CS2 launcher started: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+  echo "Repo root: $repo_root"
+  echo "Launch script: $launch_script"
+  echo "Log file: $log_file"
+} >"$log_file"
+
+exec > >(tee -a "$log_file") 2>&1
+
+if [[ ! -x "$launch_script" ]]; then
+  echo "Error: launch script is missing or not executable."
+  echo "Log path: $log_file"
+  if command -v osascript >/dev/null 2>&1; then
+    osascript -e "display alert \"CS2 failed to launch\" message \"Launch script is missing or not executable. See: $log_file\" as critical"
+  fi
+  exit 1
+fi
+
+echo "Launching CS2 via repo script..."
+if CS2_APP_LOG_FILE="$log_file" "$launch_script" "$@"; then
+  echo "CS2 launcher completed successfully."
+  exit 0
+fi
+
+status=$?
+echo "CS2 launcher failed with exit code $status."
+echo "Log path: $log_file"
+if command -v osascript >/dev/null 2>&1; then
+  osascript -e "display alert \"CS2 failed to launch\" message \"See log file: $log_file\" as critical"
+fi
+exit "$status"
